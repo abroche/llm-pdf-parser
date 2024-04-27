@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LLM Query Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <h1>LLM Query Interface</h1>
+
+    <form id="promptForm">
+        <textarea id="promptText" placeholder="Enter your prompt here..."></textarea>
+        <br>
+        <button type="button" onclick="sendPrompt()">Send Prompt</button>
+    </form>
+
+
+    <div id="responseArea">LLM will answer here...</div>
+
+    <h1>Upload a PDF File</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf" required>
+        <input type="submit" value="Upload">
+    </form>
+
+    <!-- Display message and parsed PDF text -->
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    {% if pdf_text %}
+        <hr>
+        <h2>Parsed PDF Text:</h2>
+        <pre>{{ pdf_text }}</pre>
+    {% endif %}
+
+    <script>
+        function sendPrompt() {
+            const prompt = document.getElementById('promptText').value;
+            fetch('/send_prompt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'prompt=' + encodeURIComponent(prompt)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Data: ",data)
+                if (data.answer) {
+                    document.getElementById('responseArea').innerText = data.answer;
+                } else {
+                    console.log("Unexpected response data:", data);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+
+</body>
+</html>
